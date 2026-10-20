@@ -1,0 +1,736 @@
+*****************************************************************************
+****                                                                     ****
+****            RC4000 Emulator version 1.2 release notes                ****
+****                                                                     ****
+*****************************************************************************
+
+
+IF YOU READ NOTHING ELSE, READ THIS:
+
+*****************************************************************************
+*                                                                           *
+*  COPYRIGHT:                                                               *
+*                                                                           *
+*  The installation disc includes RC4000/RC8000 software for which the      *
+*  copyright is owned by ICL Data. I hope to stay out of prison by stating  *
+*  that the emulator is strictly for demonstration purposes, and that you   *
+*  should not even THINK of profesional/commercial use.                     *
+*                                                                           *
+*  All rights to the emulator itself are owned by me. It may not be         *
+*  distributed without my personal permission. To contact me, use my e-mail:*
+*  <hj@pip.dknet.dk>, or follow the trail from which got the program.       *
+*                                                                           *
+*                                                Septemper 1995             *
+*                                                Henrik A. Jacobsen         *
+*                                                                           *
+*                                                                           *
+*  Version 1.2 made public available incl. source code May 2006.            *
+*                                                                           *
+*                                                Henrik A. Jacobsen         *
+*                                                                           *
+*                                                                           *
+*                                                                           *
+*****************************************************************************
+
+*****************************************************************************
+*  Information about changes since last release in bottom of this file      *
+*****************************************************************************
+
+To install the system: 
+
+        - Make sure you have 6 MB free space on the disc on which you
+          are going to install the system.
+
+        - Run the INSTALL program on the installation disk.
+
+
+To turn your PC into an RC4000:
+
+        - make the install directory (the directory that is current when
+          the install program terminates) current, and run RC.BAT,
+          which is placed there.
+
+        - At the "Initialise date:" prompt, answer Alt-D (or type the
+          date and time yourself). 
+
+        You are up and running!
+
+
+To turn your PC back into a PC:
+
+        - Press SysRq (normally Alt-PrintScreen).
+
+        - Press Alt-X.
+
+
+A little warning:
+        If you compile an algol program in an all-process, the file holding
+        the RC4000 disc image will expand to its maximum size (more than
+        4 MB). To avoid this, always set your process disc resources close
+        to what is actually needed when compiling.
+
+There are NO help facilities available in the emulator (nor in the
+installation program). So don't look for them!
+
+If you got the RC4000 emulator up and running, and wonder what to do then,
+take a look in the file HINTS.TXT.
+*****************************************************************************
+
+
+System requirements
+*******************
+
+Processor: 80386 or higher. NDP (80387 or the like) required.
+
+Memory   :
+           Conventional: Appr. 300KB, dep. on actual configuration.
+
+           Extended    : Appr. 1 MB (preferably more), under control of a
+                         VCPI-compliant EMS emulator (EMM386, QEMM or the
+                         like).
+
+Disc     : Min. 5MB available space on hard disc recommended.
+
+Disc Cache:
+           SMARTDRV Write-Behind caching is strongly recommended.
+
+DOS Environment:
+           Appr. 50 free bytes needed if RC.BAT is used to start the
+           emulator.
+
+                  
+Preferably, remove all resident software not needed to run the emulator
+(pop-up programs etc). Networking SW may also interfere with the emulator
+in an undesired way.
+
+
+Limitations
+***********
+
+The protection facilities of RC4000 are not implemented in the emulator
+(Monitor/Task mode switching, Protection Register, Protection Keys).
+
+Low precision floating point mode is not implemented.
+
+The emulator is not able to perform disc I/O concurrent with program 
+execution. As a consequence, the "CPU time" used by a process according
+to the process description will also include disc I/O time. So if you want
+to compare CPU performance to a physical RC4000/RC8000 from the CPU time,
+use jobs with little disc activity.
+
+The above limitation does not cause any other practical problems. Nor has
+it caused need for any change in the original disc driver code in the
+RC4000 monitor. If disc caching is used as suggested, the disc system of
+the emulator can outperform any RC4000/RC8000 anyway.
+
+If any physical disc operation or cached disc operation performed by DOS
+takes more than 25.6ms to complete, there is a danger of loosing timer
+interrupts in RC4000. This means that the date-and-time clock maintained by
+the monitor will be too slow during heavy load. Apart from this, no
+serious consequences of this problem are known.
+
+
+Installation overview
+*********************
+
+The following files are installed:
+    
+    In the base directory specified to the install program:
+
+        RC.BAT          Batch file to start the RC4000 emulator.
+
+        READ.ME         This file.
+
+        HINTS.TXT       Getting Started guide
+
+
+    In the CTRL subdirectory:
+
+        RC4000.EXE      The emulator program.
+
+        RC4000.CFG      Default configuration file, specifying the
+                        hardware configuration of the emulated RC4000.
+
+        MONITOR         Binary RC4000 monitor.
+
+
+    In the DRIVES subdirectory:
+
+        UNIT0           Image of an RC4000 system disc, containing the
+                        basic software: monitor, fp and utilities. algol 
+                        compiler and various other files. Also, bprimo, btem 
+                        and bsos (part of the MIPS/TS system) are found. 
+
+        MKDISC.EXE      Program to create an empty RC4819 disc image file.
+                        Use: MKDISC UNIT1 to create a file called UNIT1 to
+                        be used as RC4819 image. The file must not exist
+                        already.
+
+
+
+Configuration file
+******************
+
+The emulator gets information on the wanted RC4000 hardware configuration
+from a configuration file. The configuration file is pointed out by
+the DOS environment variable RC4000CFG. If this variable is not found, 
+the default configuration file name is RC4000.CFG. The configuration file
+is first searched for in the DOS current directory; then in the directory
+where the RC4000.EXE file is located.
+
+The configuration file defines the min. and max. size of Core Store,
+specified as no. of RC4000 halfwords. The Core Store allocated will
+be as large as possible, not exceeding the Max. specification. The size
+is always cut to an integer multiple of 2048 halfwords. If it is not
+possible to allocate at least Min. halfwords, the emulator will terminate
+immediately with an error message.
+
+If you want the largest possible core store, specify 8388605 for Max.
+However, at present the size is limited to 6MHW - but sizes above 1MHW are
+probably not very usefull, considering that RC4000 does not support
+process relocation, as RC8000 does.
+
+The RC4000.CFG file supplied on the installation disc contains a list
+of all possible device kinds and the syntax for specifying them. Here 
+follows some additional notes on each supported device kind.
+
+                        
+READER          The "paper tape" is read from a DOS file. Yoy will probably 
+                only use the paper tape reader in case you want to try out
+                the original way of autoloading RC4000 (as per default, the
+                emulator performs the autoload directly from a DOS file).
+                For this purpose, it is convenient to install the paper tape
+                by setting a DOS environment variable, RC2000, to point to
+                the file holding the autoload tape image.
+                See RC.BAT for an example.
+                Paper tape can also be installed by pressing Alt-C when
+                the emulator is in Control Panel mode.
+
+PUNCH           Only needed to produce autoload tapes. The paper tape
+                image goes to a DOS file with the name given in the DOS
+                environment varable RC150. This means 
+                that you only can produce one paper tape per emulation
+                session. Then you must rename the file by means of DOS.
+                If RC150 is undefined, the punch will return an error status.
+
+CONSOLE         A terminal complying to the TTY console interface, 
+                emulated on the CRT and keyboard of the PC. If more 
+                CONSOLE's and/or RC851's are defined, they are implicitly 
+                numbered from 1 and up after the sequence in which they
+                appear in the configuration file. No. 1 is in foreground
+                initially; switching between consoles is done by pressing
+                Alt-digit, i.e. Alt-2 to switch to console no. 2. etc.
+                There is no way to identify which console is in foreground.
+                CONSOLE devices has very limited control character handling,
+                but the advantage over RC851's is that CONSOLE's display 
+                the number of lines and characters on the screen that
+                were set when the emulator was called up, i.e. 50 line
+                (and more) display is possible.
+                For all consoles/terminals, the "key" interrupt is generated
+                by pressing the Esc key when the device is not in input mode.
+                (Esc also gives att when pressed during input, but that
+                is due to the RC4000 monitor).
+                
+RC851           Similar to CONSOLE, but handles RC822 control sequences
+                (=RC851 without Page Mode / Protected Fields). Always
+                displays 24 lines on screen.
+
+COMTERM         Terminal connection on COM port. Looks as a CONSOLE from
+                inside RC4000, i.e. no TMX-like interrupt expansion.
+                No kind of flow control or connect/disconnect control
+                is implmented at present.
+
+CLOCK           Only one of these should be defined, having device no. 3.
+                Normally, the 100us resolution found on RC4000/RC8000 is
+                emulated quite precisely. However some IBM PS/2 models are
+                not quite IBM compatible(!) in a respect that makes it
+                virtually impossible to emulate a resolution better than
+                one timeslice (25.6 ms). You can tell if your computer
+                is one of these from the start-up display of the emulator.
+                Clock resolution is here stated to either 100us or 25.6ms.
+
+DFC403          One DFC403 disc controller supports up to 6 RC4819 discs.
+                You may include more DF403's in the configuration (but
+                you will need to build your own monitor, then).
+
+RC4819          The disc image is kept in a DOS file, the name of which is
+                stated in the configuration file. In case you dont't 
+                know: RC4819 capacity is 9 segment/track * 20 tracks/cylinder
+                * 406 cylinders = 73080 segments. However, it is strongly
+                recommended to keep the actual disc size lower than this,
+                by using a lower slice size than the standard 36 segments.
+                Use more discs instead, if you need more capacity, assuming
+                you don't need to store very large single files.
+                The reasons for this suggestion is, among other things,
+                that DOS performance on direct access to a file degrades
+                severely with increasing file size. You may find that
+                the time needed for e.g. an algol compilation varies
+                quite much, depending on where the object file is placed
+                on the (virtual) disc: Lower slice numbers means faster
+                compilation!
+
+                Especially, it may be a good idea to keep the system disc
+                small, mainly because it is more complicated to reorganise
+                the system disc than a non-system disc.
+
+                Disc image files are created by the MKDISC program placed 
+                in the DRIVES subdirectory, see Installation Overview above.
+                Files are created small and dynamically extended, so the DOS
+                file size reflects the highest cylinder that were ever
+                written to on the disc. Reading segments that has not been
+                written results in no error but returns undefined data.
+
+                Note that the algol compiler always extends its output file
+                to appr. the maximum possible size within the BS claims of
+                the internal process, and also during compilation writes 
+                intermediate data to the file backwards, starting at the file
+                end. So, if you compile an algol program (however small) 
+                in an all-process, the disc is expanded to its maximum size.
+                So don't do that, if you don't want that to happen!
+
+                If disc operations terminate with status "parity error",
+                the reason is probably that the system is out of DOS disc
+                space to extend the disc image file.
+
+RC4819RAM       A RC4819 disc where data is kept in extended memory
+                (allocated through EMS/VCPI) rather than in a DOS file.
+                The performance gain is mainly obtained by not having to
+                go through the DOS file system, rather than by avoiding
+                physical disc accesses, assuming you use SMARTDRV as
+                suggested. A RC4819RAM disc is useful for holding the
+                object file of large algol compilations, if you want
+                ultimate performance.
+
+                The disc size is stated in no. of cylinders in the
+                configuration file (one cylinder = 180 segments
+                = 138240 bytes). RAM discs are allocated in memory before
+                allocation of the Core Store, so you may still specify 
+                maximum value for core store size.
+
+NOTE: THE RC4819 DISCS AND THE DFC403 CONTROLLER ARE NOT USED IN THE
+      DISTRIBUTION VERSION OF THE RC4000 EMULATOR ANYMORE. INSTEAD THE
+      FOLLOWING DEVICE KIND IS USED:
+
+RC433X          This is an alternative virtual disk, specially tailored for
+                the RC4000 emulator. It gives better performance than the
+                hardware emulation of DFC403/RC4819. RC433X disks uses no
+                interrupt channels on RC4000. The (virtual) disk format is
+                the same as for RC4819: 180 segm/cyl. etc. 
+                In the monitor, the RC433 driver has been modified to deal 
+                with this special disk device. 
+                Most of the comments on RC4819 above goes for RC433X as well.
+
+RC433XRAM       RAM version of RC433X. Size is specified as for RC4919RAM.
+
+DOS             This is a virtual device providing access to the DOS file
+                system. The supplied monitor for RC4000 includes a driver
+                for the device; no further documentation is given here.
+
+
+Program call parameters:
+************************
+
+The following parameters to RC4000.EXE are possible (see also RC.BAT for
+an example):
+
+/A    Autoload from paper tape on startup. Requires the RC2000 DOS environment
+      variable to point to a DOS file with a paper tape image.
+
+/A:<file>
+      Autoload and start the binary monitor stored in the DOS file with the 
+      name stated. This is the way autoload is done in the distribution
+      version of the emulator system.
+
+/S    Only meaningfull together with /A:<file>. Sets the "autostart" flag
+      in the monitor, causing (1) the system disk to be mounted,
+      (2) further s commands to be read automatically from the file 
+      "startarea".
+      Note that only the system disk is mounted. This also goes for the
+      oldcat command of s in general. Mount further disks by placing
+      "kit" commands in "startarea".
+
+/:    ...if you don't want to see my name every time you start the emulator.
+      (Pressing any key will also remove the start-up screen).
+
+Parameters must be sepearated by a blank.
+
+                
+Problems during Start up
+************************
+
+Error messages are intended to be self-explanatory. The most likely problems
+you will see is lack of memory and errors in the configuration file (in case
+you modified it).
+
+There are several different messages indicating lack of memory resources.
+In general, if the message includes the word "heap" the problem is in
+conventional memory, otherwise in extended/EMS/VCPI memory.
+
+One special error message should be mentioned here:
+
+        VCPI server not found.
+
+This means that your EMS emulator (in case you installed one at all!) does
+not support VCPI (Virtual Control Program Interface), OR that you attempted
+to start the RC4000 emulator under MS-Windows or a similar system. That
+is not possible.
+
+EMM386 found in MS-DOS version 5 and 6 supports VCPI. So does QEMM-386;
+the emulator was tested with version 5.11 and 6.02.
+
+In case your systems hangs during start up of the emulator: Try to decrease
+the max. core size to somewhat below what should be physically possible.
+Especially if you are using DOS 5.0/EMM386, as this version of EMM386 
+seems to have a bug in its VCPI memory accounting logic.
+
+
+Monitor notes
+*************
+
+The installed system disc is configured with a slice length og 3 segments,
+2030 slices, and subcat size = 36 segments, maincat size = 72 segments.
+The maincat size may be changed with the s-command maincat, after autoloading
+without "automatic startup".
+
+The monitor is stored in the DOS file MONITOR in the CTRL subdirectory and
+is loaded by the emulator.
+
+The monitor includes the following devices:
+
+Devno.  Devname   Interrupt        Driver kind
+
+  0     reader        9             RC2000
+  1     punch        12             RC150
+  2     console1  Io:6 Key:3        RC315/modified for TTY
+  3     clock        11             Interval timer
+  4     console2  Io:20 Key:19      RC315/modified for TTY
+  5     terminal1 Io:16 Key:15      RC315/modified for TTY
+  6     terminal2 Io:14 Key:13      RC315/modified for TTY
+ 15     disc          -             RC433X disc drive
+ 16     disc1         -             RC433X disc drive
+ 17     disc2         -             RC433X disc drive
+ 18     disc3         -             RC433X disc drive
+ 19     disc4         -             RC433X disc drive
+ 20     disc5         -             RC433X disc drive
+ 21     disc6         -             RC433X disc drive
+ 22     disc7         -             RC433X disc drive
+ 63     dos          21             Virtual DOS interface device
+
+
+The RC4000 monitor does not support logical discs (i.e. logical discs =
+physical discs). But the format of chainhead etc. is compatible with
+RC8000 Basic System Version 1, i.e. the utility programs disccopy,
+kiton/kitoff/kitlabel etc. can be used.
+
+Max. no. of slices on a disc is 2030.
+
+The monitor supports most RC8000 Basic System Version 1 calls, including
+General Copy (monitor procedure 84). Also, the "Message Identification Flag"
+in message buffers is supported (used e.g. in connection with the algol
+"activity" concept). The format of some internal structures are different,
+mainly due to the different protection concepts in RC4000 and RC8000.
+
+
+s notes
+*******
+
+The s operating system included supports catalog handling commands (kit,
+nokit, kitlabel, maincat, ...). The code for these commands are removed
+when the first internal process is created.
+
+In some cases, the catalog handling commands reports errors for no
+obvious reasons. If you are affected by this, use the corresponding
+utility programs instead if possible.
+
+The "oldcat" action of s has been changed to only mount the system disc,
+not all discs defined. This is done to facilitate the use of RAM discs
+which must be kitlabel'ed before mounting. When using "automatic start up",
+place the proper s commands for mounting non-system discs in the startarea
+file.
+
+
+Interface to DOS file system
+****************************
+
+Transfering files between RC4000 and the DOS file system is done by means
+of two RC4000 utility programs, fromdos and todos. These programs interact
+with a special external device in the monitor with the devicename dos 
+(deviceno. 63 in the supplied monitor). The driver for this device 
+interacts with a virtual I/O device in the emulator. Neither of these
+interfaces are documented here, but the utility programs are:
+
+
+        fromdos
+        *******
+
+        Call:
+            <file>=fromdos [conv.bin] <dosfile>
+
+        Copies a DOS file into RC4000. <file> is the name of the RC4000
+        destination file, <dosfile> is the name of the DOS file. 
+        <dosfile> may be given as a "general text parameter" starting
+        with ", and as such include a normal DOS path string. Use ù for
+        backslash (made either by the ù key or by the backslash key).
+
+        Without the conv.bin parameter, fromdos converts from DOS text
+        file conventions to RC4000 conventions. With conv.bin, binary
+        files can be copied; this only makes sense when transfering files
+        between different RC4000/RC8000 systems (emulated or the real ones).
+        The catalog tail cannot be transfered this way, but you may
+        transfer a binout file that can hold full catalog entries.
+
+
+        todos
+        *****
+
+        Call:
+
+            <dosfile>=todos [conv.bin] <file>
+                or
+            todos [conv.bin] to.<dosfile> <file>
+
+        The second form makes it possible to use DOS file names with
+        extension, or including path components.
+
+        The function of todos is similar to fromdos.
+
+        Both programs writes a line on current output, stating no. of bytes
+        transfered. The number is NOT equal to the character count given
+        by the RC4000 copy utility.
+
+        Note: Both todos and fromdos accept the parameter "conv.iso", which
+        works as non-bin mode, but without 7-to-8 bit conversion of danish
+        caracters ae oe aa etc. In certain cases, this may be usefull in
+        connection with todos.
+
+        WARNING: Using fromdos and todos directly on floppy disk files 
+        is strongly discouraged.
+
+
+More about disks and autoload:
+******************************
+
+The distribution RC4000 emulator is configured to use the emulator-specific
+RC433X discs. If you got a previous version running with RC4819 disks, just
+keep your old disk image file(s) and "paper tape" files and use them with
+the new RC4000.EXE.
+
+When using the RC433X disks, the only way to autoload the monitor into RC4000
+is to let the emulator do it from a DOS file (the /A: parameter). This is
+because the paper tape based autoloader interfaces directly to the DFC403
+controller hardware, which is different from the RC433X.
+
+If you find it blasphemic to use the emulator-specific disks and just want
+the "real thing", here's an outline of how to do it:
+
+- Inside RC4000, perform "stdmon=todos conv.bin stdmonitor"
+
+- Leave the emulator. Go to the CTRL subdirectory and edit RC4000.CFG:
+  Enable DFC403/RC4819 lines and disable RC433X by moving semicolons.
+
+- Enter DOS commands:
+      SET RC150=STDAUTO.AUT
+      RC4000 /A:STDMON /S
+  At this point, you may receive a message from the emulator about correction
+  of an illegal file size. This can be ignored.
+
+- Now in RC4000, from an all-process enter:
+  autoloader stdmonitor
+
+- Leave emulator. Enter the DOS command:
+      SET RC150=
+
+- Edit the file RC.BAT in the "install root" directory (C:\RC4000). Add:
+  @SET RC2000=C:\RC4000\CTRL\STDAUTO.AUT
+  ... and change the call of the emulator to:
+  @RC4000 /A
+
+- Calling RC.BAT, RC4000 will now prompt you: devi/disc=15/0?
+  As real RC4000 users know, the proper answer to this is a Line Feed 
+  (ctrl-J). Hopefully, the monitor is now loaded and autostart is 
+  performed.
+
+It may be wise to make an additional autoload tape without "autostart". Just
+use the program manuloader instead of autoloader to do this.
+
+Remember that the file stdmonitor must not be moved from its absolute
+position on the disc. In case of emergency, use the DOS copy of the monitor
+you made (stdmon) to recover.
+
+
+A note about Algol:
+*******************
+
+The procedures system, monitor, get/set/share/zone(6) originally did not
+support fielding of their array parameters: The arrays were always accessed
+from their lowest index and onwards. This was changed by RC at a late
+time, causing severe compatibility problems with existing code.
+
+The Algol system on the emulator system disk is tailored to use the "old"
+versions of the procedures mentioned. The "new" versions are available under
+names prefixed with an "n" (nmonitor, nsystem etc.). If you want the "new"
+procedures as default, this is possible through simple renaming.
+
+The Algol version is, from what I know, the latest version from RC9000-10
+Compiler Collection.
+
+It may be of academic interest to note that the newer versions of Algol 
+actually will run on a "real" RC4000 only if a small patch is made in the 
+runtime procedure "tofrom" (in the GG instruction testing the CPU version).
+By a kind of coincidence, this patch is not needed on the emulator.
+
+
+A note about MIPS/TS:
+*********************
+
+You will find ready-to-use bsos, btem and bprimo files on the system disc.
+Also, there are s command files named startsos, starttem, startprimo and
+startmips. You will probably need to modify these (epspecially startsos) 
+with respect to disk resources.
+
+There is no SOS user catalog (soscat), however. You have to either copy
+a soscat from another RC4000/8000/9000, or make one using upsoscat.
+
+It's not the latest release of MIPS/TS, but it works! Don't think of running
+TAS on the emulator; for several reasons TAS does not run on RC4000.
+
+
+Other SW packages:
+******************
+
+System Utility is a RC8000 version from 1987. You can probably replace it 
+with a newer version if you like.
+
+The Screen Editor will not run on the emulator for the time being, due to
+missing facilities in the RC4000 Terminal Process.
+
+BOSS has never been tried out on the emulator. Maybe the missing protection
+system will cause problems.
+
+Other compilers than Algol (and Slang) hasn't been tried out. It is however
+known that the Pascal system will run on RC4000 if a patch is made to the
+exception handler of the Pascal Runtime Library.
+
+
+Control Panel mode
+******************
+
+When you press SysRq during emulation, of if you start RC4000.EXE without the
+/a option, you enter Control Panel mode. Here you can inspect and modify 
+core store and the RC4000 registers.
+
+The most essential functions keys in Control Panel mode:
+
+F9      Resume emulation.
+
+Alt-A   Autoload (RC4000 Autoload key action).
+
+Alt-R   Reset (RC4000 Reset key action).
+
+Alt-S   Start (RC4000 Start key action).
+
+Alt-C   Install paper tape in reader.
+
+Alt-X   Return to DOS.
+
+Use of inspect/modify/trace facilities will not be documented for now. A
+qualified hacker should not be stopped by this, I think!
+
+
+*****************************************************************************
+
+
+Changes from version 1.1 to version 1.2:
+*****************************************
+
+Emulator:
+
+1: Bit 21 in the Exception register implemented, without any effect on
+   floting point precision (used bu the Gier emulator for RC4000).
+
+
+
+Changes from version 1.0 to version 1.1:
+*****************************************
+
+Emulator:
+
+1: RC433X and RC433XRAM devices added. Autoload by emulator possible.
+
+2: Bug fix: In connection with QEMM's STEALTH feature (and maybe also in
+   other envirenments), unpredictable things happened upon leaving the
+   emulator. Corrected.
+
+There might be other changes of minor importance that I forgot about...
+
+Monitor:
+
+1: The monitor supplied as a DOS file supports up to 8 RC433X discs. The
+   STDMONITOR still supports up to 6 RC4819 discs.
+
+
+Changes from version 0.1T to version 1.0:
+*****************************************
+
+Emulator:
+
+1: Bug fix: In some cases, virtual disc contents were damaged due to an error
+   in the logic taking care of extending the disc image files. If a disc
+   image file with an illegal size is found, it is repaired at start-up, and
+   an informative message is given.
+
+2: Design bug fix: Disc transfers with a block size of more than 511 segments
+   were not performed properly. This was due to the fact that a real RC4000
+   has max. 128 kw core store. The virtual DFC 403 disc controller has been 
+   modified to allow block sizes up to 4095 segments, as this is the limit
+   that the monitor will handle properply.
+
+3: Bug fix: In rare cases, the emulator would report timer resolution=25.6 ms,
+   although the PC was not a PS/2 system.
+
+
+4: Handling of non-standard video modes and screen attributes has
+   been enhanced.
+
+5: Frequency of the "beep" used for input prompt has been changed to 1000 Hz.
+   A problem concerning the duration of the beep is fixed.
+
+6: The configuration file can be located in the same directory as RC4000.EXE
+   without having to state the full path in the RC4000CFG environment string.
+
+   
+
+Monitor:
+
+1: Monitor procedures Own Process Description (5),Test Event (66),
+   and Send Pseudo Message (124) included.
+
+2: Device list slightly changed.
+
+3: The monitor will not waste time making dummy-settings of protection
+   key in the entire process area each time a process is started. Has
+   influence on performance when using the SOS operating system.
+
+
+Other:
+
+1: In the SOS system (bsos) included, a bug has been fixed. The bug could
+   cause a crash of RC4000 on certain process / bs configurations. The reason
+   was that SOS tried to handle process relocation, although this is not
+   possible on RC4000.
+
+2: Max. core size set to 1 MHW in RC4000.CFG.
+
+
+Known problems:
+***************
+
+1: The Alt-D function (supposed to autotype date and time) sometimes returns
+   garbage.
+
+2: Reading and writing address marks on RC4819 discs does not work:
+   Writing has no effect; reading returns wrong contents.
+
+3: The (undocumented) trace and single step facilities has (maybe?) a problem
+   with the je instruction.
+

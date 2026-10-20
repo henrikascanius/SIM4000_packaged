@@ -1,0 +1,81 @@
+Hints for the RC4000 simulator:
+*******************************
+
+As a first thing to try out after installation, take a game of "geo":
+Make an s process: "new myproc size 100000 run" and then call geo.
+
+If you are curious to check the performance of the simulator, try "i regnetest"
+in the same process. This test is probably also available on your RC8000/9000;
+it can be found on the RC8000 Test System Tape.
+
+While regnetest is running, switch to another virtual console by pressing
+Alt-2 (not the 2-key on the num. keypad. the other one!). Create another 
+process and run "bdisplay s" to check the time used so far. (Instead of
+"bdisplay s", you may use the command "d" which does the same). This should
+convince you that the simulator is doing "true multitasking", in case you were
+in doubt.
+
+My favourite performance test is running the rcmol compiler on the MIPS/TS
+modules. Contrary to regnetest, rcmol compilation does not rely on floating
+point calculations; still the process is very CPU-intensive. However, you
+will have to install rcmol as well as the MIPS/TS source codes yourself, they
+were left out from the distribution to save space.
+
+Before you try this out, or try to install any of your own programs, you
+should create (at least) one additional disc on the system. The quick guide
+to do this:
+
+- leave the simulator (SysReq; Alt-X).
+
+- In the DRIVES subdirectory, type the command: MKDISC UNIT1
+
+- In the CTRL subdirectory, edit the RC4000.CFG file. Add the line:
+   DEFINE RC433X  Devno=16 Dosfile=..\drives\unit1
+  ...just after the DEFINE RC433X line already there (near the bottom of the
+  file).
+
+- Start the simulator. Make an "all big run" process and give the command:
+   kitlabel 16 disc1 catdisc1 slow 36 9 2030
+  This will make a disc with a max. size of 2030*9=18270 segments = appr.
+  14 MB. If you want another max. size, change the slice size (9) to another
+  number.
+
+- Still in the all big... process, use "edit" to edit the file startarea:
+  In the top of the file, insert the line:
+  * kit 16
+
+- Leave and restart the simulator. You should now have appr. 18000 segments
+  available on disc1.
+
+Up to 7 additional discs may be added in this way.
+
+At this point, you will probably want to create one or more files with s
+commands to start up processes, and maybe to add some automatic start
+of processes to the startarea file.
+
+To install your own programs or other stuff on the system, you will first
+need to get the files in question avaiable as DOS files on the PC. Then,
+you may copy them from DOS to "RC4000" using the "fromdos" command.
+To import a text file, use e.g.:
+  tsos=fromdos "c:ùmipsùtsos"
+
+ù is used for backslash in DOS file paths.
+
+It doesn't matter if the file is in ISO or DOS text format.
+
+fromdos creates the target file with temp. scope. Remember "scope user..." if
+you want to keep it.
+
+Non-text files, e.g. binout files with ebbedded catalog entries, are imported
+by adding the parameter "conv.bin":
+  xx=fromdos conv.bin "c:ùtempùxx"
+
+More info about fromdos/todos in READ.ME.
+
+Finally: If your algol programs behave strange, please read the notes on algol
+in READ.ME.
+
+Have fun!
+
+95-09-17 16:16 HJ 
+(Cosmethic changes 96-06-10 20:10 HJ )
